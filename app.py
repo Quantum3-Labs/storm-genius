@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import Label, Button, Entry, Radiobutton, StringVar
 from PIL import Image, ImageTk
-from utils.api import calculate_social_score
+from utils.api import get_similar_users, get_trust_label_items
 
 class StormGeniusApp:
     def __init__(self, root):
@@ -39,7 +39,8 @@ class StormGeniusApp:
         self.current_step = 0
         self.steps = [
             ("🤖 Hi, this is StormGenius!\nWould you like a social score, financial score, or both?", ["social", "financial", "both"]),
-            ("Please enter your EVM address", None)
+            ("Please enter the user_id for the social score", None),
+            ("Fetching social score...", None)
         ]
         
         self.results = {}
@@ -74,11 +75,18 @@ class StormGeniusApp:
             if not selected_choice:
                 return
             self.results["score_type"] = selected_choice
+            if selected_choice == 'social':
+                self.steps = [
+                    ("🤖 Hi, this is StormGenius!\nWould you like a social score, financial score, or both?", ["social", "financial", "both"]),
+                    ("Please enter the user_id for the social score", None),
+                    ("Fetching social score...", None)
+                ]
         else:
-            evm_address = self.input_var.get()
-            if not evm_address:
+            user_input = self.input_var.get()
+            if not user_input:
                 return
-            self.results["evm_address"] = evm_address
+            if self.current_step == 1:
+                self.results["user_id"] = user_input
 
         self.current_step += 1
 
@@ -89,31 +97,19 @@ class StormGeniusApp:
 
     def fetch_and_display_results(self):
         score_type = self.results["score_type"]
-        evm_address = self.results["evm_address"]
         
-        self.message_label.config(text=f"🤖 Fetching {score_type} score for address {evm_address}...")
+        self.message_label.config(text=f"🤖 Fetching {score_type} score...")
         self.root.update()
 
         try:
+            if score_type == 'social':
+                user_id = self.results["user_id"]
+                trust_items = get_trust_label_items()
+                result_message = f"Trust Label Items: {trust_items}"
+            else:
+                result_message = "Financial score calculation is not implemented."
 
-            # Fetch contract data
-            contract_data = {
-                "balance": 1000,
-                "transactions": 50
-            }
-            self.message_label.config(text=f"Smart Contract Data: {contract_data}")
-            self.root.update()
-            self.root.after(2000)  # Simulate delay
-
-            # Fetch similar users and calculate social score
-            social_score = calculate_social_score(evm_address)
-            trust_score = {
-                "social_score": social_score if score_type in ['social', 'both'] else None,
-                "financial_score": 90 if score_type in ['financial', 'both'] else None
-            }
-            trust_score_message = f"🤖 Trust Score: {trust_score}"
-            self.message_label.config(text=trust_score_message)
-
+            self.message_label.config(text=result_message)
             self.submit_button.config(text="Close", command=self.root.quit)
 
         except Exception as e:
