@@ -1,8 +1,8 @@
 import requests
 from config.settings import API_BASE_URL
 
-def get_robot_data(robot_id):
-    response = requests.get(f'{API_BASE_URL}/robots/{robot_id}')
+def get_robot_data(evm_address):
+    response = requests.get(f'{API_BASE_URL}/robots/{evm_address}')
     if response.status_code == 200:
         return response.json()
     else:
