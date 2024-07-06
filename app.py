@@ -36,11 +36,12 @@ class StormGeniusApp:
         self.submit_button.pack(pady=10)
         self.submit_button.pack_forget()
 
+        self.close_button = None
+
         self.current_step = 0
         self.steps = [
             ("🤖 Hi, this is StormGenius!\nWould you like a social score or a financial score?", ["social", "financial"]),
             ("Please enter the user_id for the social score", None),
-            ("Fetching social score...", None)
         ]
         
         self.results = {}
@@ -83,19 +84,16 @@ class StormGeniusApp:
                 self.steps = [
                     ("🤖 Hi, this is StormGenius!\nWould you like a social score or a financial score?", ["social", "financial"]),
                     ("Please enter the user_id for the social score", None),
-                    ("Fetching social score...", None)
                 ]
             elif selected_choice == 'financial':
                 self.steps = [
-                    ("🤖 Hi, this is StormGenius!\nWould you like a social score or a financial score?", ["social", "financial"]),
                     ("Fetching financial score...", None)
                 ]
         else:
             user_input = self.input_var.get()
             if not user_input:
                 return
-            if self.current_step == 1:
-                self.results["user_id"] = user_input
+            self.results["user_id"] = user_input
 
         self.current_step += 1
 
@@ -105,26 +103,32 @@ class StormGeniusApp:
             self.fetch_and_display_results()
 
     def fetch_and_display_results(self):
-        score_type = self.results["score_type"]
-        
+        score_type = self.results.get("score_type", "")
+        user_id = self.results.get("user_id", "")
+
         self.message_label.config(text=f"🤖 Fetching {score_type} score...")
         self.root.update()
 
         try:
-            if score_type == 'social':
-                user_id = self.results["user_id"]
+            if score_type == 'social' and user_id:
                 trust_items = get_trust_label_items()
                 result_message = f"Trust Label Items: {trust_items}"
             else:
                 result_message = "Financial score calculation is not implemented."
 
             self.message_label.config(text=result_message)
+            
+            if self.close_button:
+                self.close_button.pack_forget()
             self.close_button = Button(self.root, text="Close", command=self.root.quit, bg='#FFFFFF', fg='#4B0082', font=("Helvetica Neue Bold", 16), activebackground='#6A5ACD', activeforeground='white', bd=0, padx=10, pady=5)
             self.close_button.pack(pady=10)
 
         except Exception as e:
             error_message = f"Error: {e}"
             self.message_label.config(text=error_message)
+            
+            if self.close_button:
+                self.close_button.pack_forget()
             self.close_button = Button(self.root, text="Close", command=self.root.quit, bg='#FFFFFF', fg='#4B0082', font=("Helvetica Neue Bold", 16), activebackground='#6A5ACD', activeforeground='white', bd=0, padx=10, pady=5)
             self.close_button.pack(pady=10)
 
