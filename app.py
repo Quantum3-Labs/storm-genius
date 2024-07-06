@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import Label, Button, Entry, Radiobutton, StringVar
 from PIL import Image, ImageTk
+from utils.api import calculate_social_score
 
 class StormGeniusApp:
     def __init__(self, root):
@@ -93,34 +94,31 @@ class StormGeniusApp:
         self.message_label.config(text=f"🤖 Fetching {score_type} score for address {evm_address}...")
         self.root.update()
 
-        # Mock data for robot data
-        robot_data = {
-            "id": evm_address,
-            "name": "Test Robot",
-            "model": "Model-X"
-        }
-        self.message_label.config(text=f"Robot Data: {robot_data}")
-        self.root.update()
-        self.root.after(2000)  # Simulate delay
+        try:
 
-        # Mock data for smart contract data
-        contract_data = {
-            "balance": 1000,
-            "transactions": 50
-        }
-        self.message_label.config(text=f"Smart Contract Data: {contract_data}")
-        self.root.update()
-        self.root.after(2000)  # Simulate delay
+            # Fetch contract data
+            contract_data = {
+                "balance": 1000,
+                "transactions": 50
+            }
+            self.message_label.config(text=f"Smart Contract Data: {contract_data}")
+            self.root.update()
+            self.root.after(2000)  # Simulate delay
 
-        # Mock logic to calculate trust score
-        trust_score = {
-            "social_score": 85 if score_type in ['social', 'both'] else None,
-            "financial_score": 90 if score_type in ['financial', 'both'] else None
-        }
-        trust_score_message = f"🤖 Trust Score: {trust_score}"
-        self.message_label.config(text=trust_score_message)
+            # Fetch similar users and calculate social score
+            social_score = calculate_social_score(evm_address)
+            trust_score = {
+                "social_score": social_score if score_type in ['social', 'both'] else None,
+                "financial_score": 90 if score_type in ['financial', 'both'] else None
+            }
+            trust_score_message = f"🤖 Trust Score: {trust_score}"
+            self.message_label.config(text=trust_score_message)
 
-        self.submit_button.config(text="Close", command=self.root.quit)
+            self.submit_button.config(text="Close", command=self.root.quit)
+
+        except Exception as e:
+            error_message = f"Error: {e}"
+            self.message_label.config(text=error_message)
 
 def main():
     root = tk.Tk()
