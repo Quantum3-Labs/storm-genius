@@ -117,9 +117,13 @@ class StormGeniusApp:
                 result_message = f"Social Score: {social_score}"
             elif score_type == 'financial' and loan_id:
                 print(f"Debug: Sending message to contract for loan_id={loan_id}")
-                receipt = send_message_to_contract(int(loan_id))
-                print(f"Debug: Transaction receipt: {receipt}")
-                result_message = f"Financial Score Request Sent.\nTransaction Receipt: {receipt}"
+                response, receipt = send_message_to_contract(int(loan_id))
+                if response and receipt:
+                    print(f"Debug: Transaction receipt: {receipt}")
+                    print(f"Debug: Response from contract: {response}")
+                    result_message = response
+                else:
+                    result_message = "Failed to get a response from the contract."
             else:
                 result_message = "Invalid input."
 

@@ -100,7 +100,7 @@ def send_message_to_contract(loan_id):
 
     # Call your function
     call_function = contract.functions.sendMessage(loan_id).build_transaction({
-        'chainId': 696969,
+        'chainId': chain_id,
         'from': caller,
         'nonce': nonce,
         'gas': 2000000,
@@ -119,7 +119,9 @@ def send_message_to_contract(loan_id):
     tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
     print("Transaction successful")
 
-    return tx_receipt
+    # Fetch and print the response from the contract
+    response = contract.functions.response().call()
+    print(f"Response from contract: {response}")
 
 if __name__ == "__main__":
     vitalik_user_id = '5650'  
@@ -127,5 +129,5 @@ if __name__ == "__main__":
     print(f"Social score of user {vitalik_user_id} is {social_score}")
     
     loan_id = 12295443342769835489004685851661808204504702382070150137287530558429035716723
-    receipt = send_message_to_contract(loan_id)
+    response, receipt = send_message_to_contract(loan_id)
     print(f"Transaction receipt: {receipt}")
