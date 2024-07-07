@@ -121,3 +121,13 @@ By leveraging AI models on-chain and fetching real-time social interaction data,
 4. **View Results**: The application will fetch and display the relevant score and assessment.
 
 By following these steps, you can easily run the StormGenius bot and leverage its capabilities to assess borrower credibility in a decentralized lending protocol.
+
+## Contracts
+
+- **ChatgptLLM**: [0xC5e3F849996167E80CB7B224696dcAEA6e35F0C1](https://explorer.galadriel.com/address/0xC5e3F849996167E80CB7B224696dcAEA6e35F0C1)
+- **LoanManager (from Lending protocol)**: 0x5BB7839f554da657e80C19998Fa685Fd28B9697F
+
+### To deploy ChatgptLLM contract:
+
+```bash
+forge script script/DeployChatgptLLM.s.sol --rpc-url $GALADRIEL_RPC_URL --private-key $PRIVATE_KEY --legacy --broadcast
