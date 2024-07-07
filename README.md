@@ -28,6 +28,8 @@ We introduce two key AI-driven features to enhance the lending process:
 
 We use the Chatgpt LLM that is integrated into Galadriel to interact with the lending contract to fetch the borrower’s loan-related background. Based on the fetched data, the on-chain Chatgpt LLM provides a credibility assessment and assigns a financial score (0 to 5). This score and assessment help the lender make informed lending decisions.
 
+#### Please refer to this branch for the code: https://github.com/Quantum3-Labs/storm-genius/tree/vfGaladriel 
+
 #### 2. Social Score Assessment via mbd (https://www.mbd.xyz/)
 
 #### mbd offers composable and simple-to-use AI models: Fetches social scores based on interactions on social media platforms like Farcaster or Twitter.
@@ -37,7 +39,7 @@ This social score helps both parties make decisions based on social credibility.
 
 ## Technologies Used
 
-- **Galadriel**: A Layer 1 blockchain designed for deploying AI agents on-chain.
+- **Galadriel**: A Layer 1 blockchain designed for deploying AI agents on-chain. (Please refer to this branch for the code: https://github.com/Quantum3-Labs/storm-genius/tree/vfGaladriel)
 - **Chatgpt LLM**: An AI model used for interacting with the lending contract and providing financial credibility assessments.
 - **mbd API**: Used for fetching social scores based on social media interactions.
 - **Python**: The primary programming language used for developing the application.
