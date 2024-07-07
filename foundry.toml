@@ -2,19 +2,18 @@
 src = "src"
 out = "out"
 libs = ["lib"]
-via-ir=true
+via-ir = true
 optimizer_runs = 100
 gas_reports = ["*"]
-fs_permissions = [{ access = "read-write", path = "./"}]
+fs_permissions = [{ access = "read-write", path = "./" }]
 
 [rpc_endpoints]
 default_network = "http://127.0.0.1:8545"
 localhost = "http://127.0.0.1:8545"
-arbitrumSepolia = "${ARB_SEPOLIA_RPC}"
+galadrielDevnet = "https://devnet.galadriel.com/"
+# arbitrumSepolia = "${ARB_SEPOLIA_RPC}"
 
-[etherscan]
-arbitrumSepolia = { key = "${ETHERSCAN_API_KEY}" }
+# [etherscan]
+# arbitrumSepolia = { key = "${ETHERSCAN_API_KEY}" }
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
-
-

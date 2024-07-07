@@ -1,0 +1,11 @@
+{
+  "AssetManager": "0xB8f6afcE0E8572248aFC1Ab540f36e3F3835928F",
+  "LendingManager": "0xbaa82BF9773dccb1937C83C22913FD78fF987593",
+  "LoanManager": "0x31d45DAa525bb85F200E65390A5685B9253f5006",
+  "MockDai": "0x01dEf3BD03daC30a243D55Af2e5255F553964Aa2",
+  "MockUsdc": "0x6CBc0fD8d5cf4Dcc24FcFFD93390dffC7C61e52b",
+  "MockUsdt": "0x3419350265Ff06b824698813df806A8d7Cb6F9fC",
+  "StormbitRegistry": "0x2427118b9E4A5177De7D0EA985864eB5a157EDFf",
+  "block": 22173566,
+  "network-name": "galadrielDevnet"
+}

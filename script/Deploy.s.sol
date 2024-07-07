@@ -2,12 +2,12 @@
 pragma solidity ^0.8.21;
 
 import {Script} from "forge-std/Script.sol";
-import {MockToken} from "src/mocks/MockToken.sol";
+import {MockToken} from "../src/mocks/MockToken.sol";
 import {AssetManager} from "../src/AssetManager.sol";
 import {LendingManager} from "../src/LendingManager.sol";
 import {LoanManager} from "../src/LoanManager.sol";
-import {DeployHelpers} from "script/DeployHelpers.s.sol";
-import {StormbitRegistry} from "src/StormbitRegistry.sol";
+import {DeployHelpers} from "./DeployHelpers.s.sol";
+import {StormbitRegistry} from "../src/StormbitRegistry.sol";
 
 contract Deploy is DeployHelpers {
     function run() public {
