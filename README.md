@@ -43,6 +43,8 @@ This social score helps both parties make decisions based on social credibility.
 - **Python**: The primary programming language used for developing the application.
 - **Web3.py**: A Python library for interacting with Ethereum.
 - **tkinter**: A standard Python interface to the Tk GUI toolkit used for building the user interface.
+- **Social Score Explanation via Corcel** : Corcel allows developers to build with AI, faster, easier and cheaper than ever before. Powered by the Corcel API, developers can release the full potential of what they can do with decentralized machine learning. After getting the social score, we prompt a large language model to give a personalized explanation of the score. 
+
 
 ## How It Works
 
