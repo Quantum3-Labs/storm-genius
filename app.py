@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import Label, Button, Entry, StringVar
 from PIL import Image, ImageTk
-from utils.api import get_similar_users, get_trust_label_items
+from utils.api import get_social_score
 
 class StormGeniusApp:
     def __init__(self, root):
@@ -41,7 +41,7 @@ class StormGeniusApp:
         self.current_step = 0
         self.steps = [
             ("🤖 Hi, this is StormGenius!\nWould you like a social score or a financial score?", ["social", "financial"]),
-            ("Please enter the user_id for the social score", None),
+            ("Please enter the Farcaster ID for the social score", None),
         ]
         
         self.results = {}
@@ -83,7 +83,7 @@ class StormGeniusApp:
             if selected_choice == 'social':
                 self.steps = [
                     ("🤖 Hi, this is StormGenius!\nWould you like a social score or a financial score?", ["social", "financial"]),
-                    ("Please enter the user_id for the social score", None),
+                    ("Please enter the Farcaster ID for the social score", None),
                 ]
             elif selected_choice == 'financial':
                 self.steps = [
@@ -111,8 +111,9 @@ class StormGeniusApp:
 
         try:
             if score_type == 'social' and user_id:
-                trust_items = get_trust_label_items()
-                result_message = f"Trust Label Items: {trust_items}"
+                # Fetch the social score
+                social_score = get_social_score(user_id)
+                result_message = f"Social Score: {social_score}"
             else:
                 result_message = "Financial score calculation is not implemented."
 

@@ -2,60 +2,70 @@ import requests
 from config.settings import API_BASE_URL, MBD_API_KEY
 
 def get_robot_data(evm_address):
-    try:
-        response = requests.get(f'{API_BASE_URL}/robots/{evm_address}')
-        response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
+    response = requests.get(f'{API_BASE_URL}/robots/{evm_address}')
+    if response.status_code == 200:
         return response.json()
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching robot data: {e}")
-        raise Exception('Failed to fetch robot data') from e
+    else:
+        raise Exception('Failed to fetch robot data')
 
-def get_trust_score(data):
-    try:
-        response = requests.post(f'{API_BASE_URL}/trust_score', json=data)
-        response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        print(f"Error getting trust score: {e}")
-        raise Exception('Failed to get trust score') from e
+def get_social_score(fid):
+    nRes = get_most_recent_casts_for_user_from_fid(fid)
+    ids = [cast['item_id'] for cast in nRes]
+    mRes = get_emotion_labels(ids)
 
-def get_similar_users(user_id, top_k=10):
-    url = "https://api.mbd.xyz/v1/farcaster/users/feed/similar"
+    count = 0
+    total_trust = 0
+    for current in mRes:
+        if "trust" in current['labels']['emotion']:
+            total_trust += current['labels']['emotion']['trust']
+            count += 1
+
+    social_score = total_trust * 100 / count if count > 0 else 0
+    return social_score
+
+def get_most_recent_casts_for_user_from_fid(fid):
+    url = "https://api.mbd.xyz/v1/farcaster/casts/feed/for-you"
     payload = {
-        "user_id": user_id,
-        "top_k": top_k
+        "user_id": fid,
+        "top_k": 50,
+        "return_ai_labels": True
     }
     headers = {
         "accept": "application/json",
+        "HTTP-Referer": "https://docs.mbd.xyz/",
+        "X-Title": "mbd_docs",
         "content-type": "application/json",
         "x-api-key": MBD_API_KEY
     }
 
-    try:
-        response = requests.post(url, json=payload, headers=headers)
-        response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
-        return response.json().get("body", [])
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching similar users: {e}")
-        raise Exception('Failed to fetch similar users') from e
+    response = requests.post(url, json=payload, headers=headers)
 
-def get_trust_label_items(top_k=10, reverse=True, label="trust"):
-    url = "https://api.mbd.xyz/v1/farcaster/casts/labels/top-items"
+    if response.status_code != 200:
+        raise Exception('Failed to fetch casts for user with fid: ', fid)
+
+    return response.json().get("body", [])
+
+def get_emotion_labels(ids):
+    url = "https://api.mbd.xyz/v1/farcaster/casts/labels/for-items"
     payload = {
-        "top_k": top_k,
-        "reverse": reverse,
-        "label": label
+        "items_list": ids,
+        "label_category": "emotion"
     }
     headers = {
         "accept": "application/json",
+        "HTTP-Referer": "https://docs.mbd.xyz/",
+        "X-Title": "mbd_docs",
         "content-type": "application/json",
         "x-api-key": MBD_API_KEY
     }
 
-    try:
-        response = requests.post(url, json=payload, headers=headers)
-        response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
-        return response.json().get("body", [])
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching trust label items: {e}")
-        raise Exception('Failed to fetch trust label items') from e
+    response = requests.post(url, json=payload, headers=headers)
+    if response.status_code != 200:
+        raise Exception('Failed to fetch emotion labels')
+
+    return response.json().get("body", [])
+
+if __name__ == "__main__":
+    vitalik_user_id = '12345'  # Replace with actual user ID
+    social_score = get_social_score(vitalik_user_id)
+    print(f"Social score of user {vitalik_user_id} is {social_score}")
