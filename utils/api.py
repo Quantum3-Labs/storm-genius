@@ -68,15 +68,38 @@ def get_emotion_labels(ids):
     return response.json().get("body", [])
 
 def get_gpt_explanation(social_score):
-    openai.api_key = OPENAI_API_KEY
-    prompt = f"The social score of the user is {social_score}. Explain this metric in two lines."
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
-        max_tokens=50
-    )
-    explanation = response.choices[0].text.strip()
-    return explanation
+    # openai.api_key = OPENAI_API_KEY
+    # prompt = f"The social score of the user is {social_score}. Explain this metric in two lines."
+    # response = openai.Completion.create(
+    #     engine="text-davinci-003",
+    #     prompt=prompt,
+    #     max_tokens=50
+    # )
+    # explanation = response.choices[0].text.strip()
+    # return explanation
+
+    url = "https://api.corcel.io/v1/chat/completions"
+    
+    payload = {
+        "model": "llama-3",
+        "temperature": 0.1,
+        "max_tokens": 500,
+        "messages": [
+            {
+                "role": "user",
+                "content": "f"The social score of the user is {social_score}. Explain this metric in two lines.""
+            }
+        ]
+    }
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "Authorization": "e83c689e-e526-4738-996a-f62b5bd5aade"
+    }
+    
+    response = requests.post(url, json=payload, headers=headers)
+    
+    return response.text
 
 from web3 import Web3
 
