@@ -9,7 +9,7 @@ contract ChatgptLLM {
     ILoanManager private loanManager;
 
     address private oracleAddress; // use latest: https://docs.galadriel.com/oracle-address
-    // IOracle.Message public message; // no need?
+    // IOracle.Message public message;
     IOracle.Message[] public messages;
     string public response;
     IOracle.OpenAiRequest private config;
@@ -44,23 +44,15 @@ contract ChatgptLLM {
     function sendMessage(uint256 loanId) public {
         ILoanManager.Loan memory loan = loanManager.getLoan(loanId);
         uint256 assetsAllocated = loan.assetsAllocated;
-        uint256 deadlineAllocate = loan.deadlineAllocate;
-        ILoanManager.LoanStatus status = loan.status;
+        // ILoanManager.LoanStatus status = loan.status;
 
         string memory assetsAllocatedString = Strings.toString(assetsAllocated);
-        string memory deadlineAllocateString = Strings.toString(
-            deadlineAllocate
-        );
-        string memory statusString = Strings.toString(uint256(status));
+        // string memory statusString = Strings.toString(uint256(status));
         string memory promptMessage = string(
             abi.encodePacked(
-                "The borrower has the following loan-related background: the borrower has borrowed ",
+                "The borrower has the following loan-related background: the borrower has borrowed 5 times in the past 2 years ",
                 assetsAllocatedString,
-                " of crypto, the deadline for the allocation was ",
-                deadlineAllocateString,
-                " days, the loan status is ",
-                statusString,
-                ". Based on this data, please provide the borrower's eligibility score to the lender."
+                " of crypto. All these loans have the status of paid with delay. Based on this data, please provide the borrower's eligibility score to the lender."
             )
         );
         messages = createTextMessage("user", promptMessage);
