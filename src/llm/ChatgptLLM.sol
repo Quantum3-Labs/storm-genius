@@ -8,21 +8,24 @@ import {ILoanManager} from "../interfaces/managers/loan/ILoanManager.sol";
 contract ChatgptLLM {
     ILoanManager private loanManager;
 
+    address private owner;
     address private oracleAddress; // use latest: https://docs.galadriel.com/oracle-address
-    // IOracle.Message public message;
     IOracle.Message[] public messages;
     string public response;
     IOracle.OpenAiRequest private config;
     string public contextPrompt;
+    // uint256 public assetsRequired;
+    // string public assetsRequiredString;
 
     constructor(
         address initialOracleAddress,
-        address loanManagerAddr,
+        address initialLoanManagerAddr,
         string memory _contextPrompt
     ) {
+        owner = msg.sender;
         oracleAddress = initialOracleAddress;
         contextPrompt = _contextPrompt;
-        loanManager = ILoanManager(loanManagerAddr);
+        loanManager = ILoanManager(initialLoanManagerAddr);
 
         config = IOracle.OpenAiRequest({
             model: "gpt-4-turbo", // gpt-4-turbo gpt-4o
@@ -42,19 +45,38 @@ contract ChatgptLLM {
     }
 
     function sendMessage(uint256 loanId) public {
+        // Get the details for a specific loan with its ID
         ILoanManager.Loan memory loan = loanManager.getLoan(loanId);
-        uint256 assetsAllocated = loan.assetsAllocated;
-        // ILoanManager.LoanStatus status = loan.status;
+        uint256 assetsRequiredUint = loan.assetsRequired;
+        ILoanManager.LoanStatus status = loan.status;
 
-        string memory assetsAllocatedString = Strings.toString(assetsAllocated);
-        // string memory statusString = Strings.toString(uint256(status));
+        // Fetch the required assets
+        string memory assetsRequiredString = Strings.toString(
+            assetsRequiredUint
+        );
+        // Fetch the status of the loan
+        string memory statusString;
+        if (status == ILoanManager.LoanStatus.Pending) {
+            statusString = "Pending";
+        } else if (status == ILoanManager.LoanStatus.Active) {
+            statusString = "Active";
+        } else if (status == ILoanManager.LoanStatus.Repaid) {
+            statusString = "Repaid";
+        } else if (status == ILoanManager.LoanStatus.Cancelled) {
+            statusString = "Cancelled";
+        }
+
+        // Create the prompt message by combining the loan details with the context prompt
         string memory promptMessage = string(
             abi.encodePacked(
                 "The borrower has the following loan-related background: the borrower has borrowed 5 times in the past 2 years ",
-                assetsAllocatedString,
-                " of crypto. All these loans have the status of paid with delay. Based on this data, please provide the borrower's eligibility score to the lender."
+                assetsRequiredString,
+                " of crypto. All these loans have the status of paid with delay and ",
+                statusString,
+                "Based on this data, please provide the borrower's eligibility score to the lender."
             )
         );
+
         messages = createTextMessage("user", promptMessage);
         IOracle(oracleAddress).createOpenAiLlmCall(0, config);
     }
@@ -108,5 +130,20 @@ contract ChatgptLLM {
         messages.push(newMessage);
 
         return messages;
+    }
+
+    function setOracleAddress(address newOracleAddress) public onlyOwner {
+        oracleAddress = newOracleAddress;
+    }
+
+    function updateLoanManagerAddress(
+        address newLoanManagerAddress
+    ) public onlyOwner {
+        loanManager = ILoanManager(newLoanManagerAddress);
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Caller is not owner");
+        _;
     }
 }
