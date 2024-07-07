@@ -1,6 +1,18 @@
 import requests
 import openai
 from config.settings import API_BASE_URL, MBD_API_KEY, ETH_NODE_URL, CONTRACT_ADDRESS, CONTRACT_ABI, PRIVATE_KEY
+from web3 import Web3
+
+# Connect to the network
+web3 = Web3(Web3.HTTPProvider(ETH_NODE_URL))
+
+# Verify if the connection is successful
+if web3.is_connected():
+    print("-" * 50)
+    print("Connection Successful")
+    print("-" * 50)
+else:
+    print("Connection Failed")
 
 def get_robot_data(evm_address):
     response = requests.get(f'{API_BASE_URL}/robots/{evm_address}')
@@ -102,36 +114,44 @@ def get_gpt_explanation(social_score):
     return response.text
 
 from web3 import Web3
-
-web3 = Web3(Web3.HTTPProvider(ETH_NODE_URL))
-
 def send_message_to_contract(loan_id):
+    # Initialize the address calling the functions/signing transactions
+    caller = web3.eth.account.from_key(PRIVATE_KEY).address
+    private_key = PRIVATE_KEY  # To sign the transaction
+
+    # Initialize address nonce
+    nonce = web3.eth.get_transaction_count(caller)
+
+    # Create smart contract instance
     contract = web3.eth.contract(address=CONTRACT_ADDRESS, abi=CONTRACT_ABI)
-    function = contract.functions.sendMessage(loan_id)
 
-    account = web3.eth.account.privateKeyToAccount(PRIVATE_KEY)
-    nonce = web3.eth.getTransactionCount(account.address)
-    gas_price = web3.eth.gasPrice
+    # Initialize the chain id, we need it to build the transaction for replay protection
+    chain_id = web3.eth.chain_id
 
-    transaction = function.buildTransaction({
-        'chainId': 696969,  # Galadriel Devnet chain ID
-        'gas': 2000000,
-        'gasPrice': gas_price,
+    # Call your function
+    call_function = contract.functions.sendMessage(loan_id).buildTransaction({
+        'chainId': chain_id,
+        'from': caller,
         'nonce': nonce,
     })
 
-    signed_txn = web3.eth.account.signTransaction(transaction, private_key=PRIVATE_KEY)
-    tx_hash = web3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    tx_receipt = web3.eth.waitForTransactionReceipt(tx_hash)
+    # Sign transaction
+    signed_tx = web3.eth.account.sign_transaction(call_function, private_key=private_key)
 
-    return tx_receipt
+
+    # Send transaction
+    print('Sending transaction...')
+    tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+
+    # Wait for transaction receipt
+    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+    print("Transacion successful")
+
 
 if __name__ == "__main__":
     vitalik_user_id = '5650'  
     social_score = get_social_score(vitalik_user_id)
-    explanation = get_gpt_explanation(social_score)
     print(f"Social score of user {vitalik_user_id} is {social_score}")
-    print(f"Explanation: {explanation}")
     
     loan_id = 12295443342769835489004685851661808204504702382070150137287530558429035716723
     receipt = send_message_to_contract(loan_id)
