@@ -4,11 +4,13 @@
   <br>
   <img src="stormgenius.png" alt="storm-genius" width="200"></a>
   <br>
-  An AI tool leveraging Graph Neural Networks (GNNs)
-  <br>
+Integrating AI for Smarter DeFi Lending Decisions  <br>
 </h1>
 
-### Welcome to StormGenius, an innovative project enhancing an existing decentralized lending protocol by leveraging AI technology. Our solution revolutionizes the traditional DeFi protocol by integrating AI, enhancing the credibility assessment process, and providing a more secure and efficient lending experience. Our project exemplifies the potential of AIxWeb3 to transform DeFi.
+
+
+### Welcome to StormGenius, an innovative project enhancing an existing decentralized lending protocol by leveraging AI technology. Our solution revolutionizes the traditional DeFi protocol by integrating AI, enhancing the credibility assessment process, and providing a more secure and efficient lending experience. Our project exemplifies the potential of AIxWeb3 to transform DeFi by integrating AI for smarter DeFi lending decisions.
+
 
 ### Project Overview
 StormGenius operates on top of a decentralized lending protocol involving three key parties:
