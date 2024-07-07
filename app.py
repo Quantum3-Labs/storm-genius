@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import Label, Button, Entry, StringVar
 from PIL import Image, ImageTk
-from utils.api import get_social_score, get_gpt_explanation, send_message_to_contract
+from utils.api import get_social_score, send_message_to_contract
 
 class StormGeniusApp:
     def __init__(self, root):
@@ -41,8 +41,6 @@ class StormGeniusApp:
         self.current_step = 0
         self.steps = [
             ("🤖 Hi, this is StormGenius!\nWould you like a social score or a financial score?", ["social", "financial"]),
-            ("Please enter the Farcaster ID for the social score", None),
-            ("Please enter the loan ID for the financial score", None),
         ]
         
         self.results = {}
@@ -67,32 +65,27 @@ class StormGeniusApp:
                 self.choice_buttons.append(button)
         else:
             self.entry.pack()
-            for button in self.choice_buttons:
-                button.pack_forget()
             self.submit_button.pack()
 
     def on_choice(self, choice):
         self.choice_var.set(choice)
+        if choice == 'social':
+            self.steps.append(("Please enter the Farcaster ID for the social score", None))
+        elif choice == 'financial':
+            self.steps.append(("Please enter the loan ID for the financial score", None))
         self.on_submit()
 
     def on_submit(self):
         if self.current_step == 0:
             selected_choice = self.choice_var.get()
             if not selected_choice:
+                self.message_label.config(text="Error: No choice selected.")
                 return
             self.results["score_type"] = selected_choice
-            if selected_choice == 'social':
-                self.steps = [
-                    ("🤖 Hi, this is StormGenius!\nWould you like a social score or a financial score?", ["social", "financial"]),
-                    ("Please enter the Farcaster ID for the social score", None),
-                ]
-            elif selected_choice == 'financial':
-                self.steps = [
-                    ("Please enter the loan ID for the financial score", None),
-                ]
         else:
             user_input = self.input_var.get()
             if not user_input:
+                self.message_label.config(text="Error: No input provided.")
                 return
             if self.results["score_type"] == 'social' and self.current_step == 1:
                 self.results["user_id"] = user_input
@@ -115,13 +108,17 @@ class StormGeniusApp:
         self.root.update()
 
         try:
+            result_message = ""  # Initialize result_message
             if score_type == 'social' and user_id:
                 # Fetch the social score
+                print(f"Debug: Fetching social score for user_id={user_id}")
                 social_score = get_social_score(user_id)
-                explanation = get_gpt_explanation(social_score)
-                result_message = f"Social Score: {social_score}\nExplanation: {explanation}"
+                print(f"Debug: Social score: {social_score}")
+                result_message = f"Social Score: {social_score}"
             elif score_type == 'financial' and loan_id:
+                print(f"Debug: Sending message to contract for loan_id={loan_id}")
                 receipt = send_message_to_contract(int(loan_id))
+                print(f"Debug: Transaction receipt: {receipt}")
                 result_message = f"Financial Score Request Sent.\nTransaction Receipt: {receipt}"
             else:
                 result_message = "Invalid input."
@@ -134,7 +131,13 @@ class StormGeniusApp:
             self.close_button.pack(pady=10)
 
         except Exception as e:
-            error_message = f"Error: {e}"
+            error_message = (
+                f"Error: {e}\n"
+                f"Score Type: {score_type}\n"
+                f"User ID: {user_id}\n"
+                f"Loan ID: {loan_id}\n"
+            )
+            print(f"Debug: {error_message}")
             self.message_label.config(text=error_message)
             
             if self.close_button:
