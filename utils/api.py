@@ -79,6 +79,33 @@ def get_emotion_labels(ids):
 
     return response.json().get("body", [])
 
+def get_gpt_explanation(social_score):
+    url = "https://api.corcel.io/v1/text/cortext/chat"
+
+    payload = {
+        "model": "cortext-ultra",
+        "stream": False,
+        "top_p": 1,
+        "temperature": 0.0001,
+        "max_tokens": 4096,
+        "messages": [
+            {
+                "role": "user",
+                "content": f"The social score of the user is {social_score}. Explain this metric in two lines."
+            },
+        ]
+    }
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "Authorization": "e83c689e-e526-4738-996a-f62b5bd5aade"
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+
+    return response.json()[0]['choices'][0]['delta']['content']
+
+from web3 import Web3
 def send_message_to_contract(loan_id):
     abi = json.loads('{"abi":[{"type":"constructor","inputs":[{"name":"initialOracleAddress","type":"address","internalType":"address"},{"name":"initialLoanManagerAddr","type":"address","internalType":"address"},{"name":"_contextPrompt","type":"string","internalType":"string"}],"stateMutability":"nonpayable"},{"type":"function","name":"contextPrompt","inputs":[],"outputs":[{"name":"","type":"string","internalType":"string"}],"stateMutability":"view"},{"type":"function","name":"getMessageHistory","inputs":[{"name":"","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"","type":"tuple[]","internalType":"struct IOracle.Message[]","components":[{"name":"role","type":"string","internalType":"string"},{"name":"content","type":"tuple[]","internalType":"struct IOracle.Content[]","components":[{"name":"contentType","type":"string","internalType":"string"},{"name":"value","type":"string","internalType":"string"}]}]}],"stateMutability":"view"},{"type":"function","name":"messages","inputs":[{"name":"","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"role","type":"string","internalType":"string"}],"stateMutability":"view"},{"type":"function","name":"onOracleOpenAiLlmResponse","inputs":[{"name":"","type":"uint256","internalType":"uint256"},{"name":"_response","type":"tuple","internalType":"struct IOracle.OpenAiResponse","components":[{"name":"id","type":"string","internalType":"string"},{"name":"content","type":"string","internalType":"string"},{"name":"functionName","type":"string","internalType":"string"},{"name":"functionArguments","type":"string","internalType":"string"},{"name":"created","type":"uint64","internalType":"uint64"},{"name":"model","type":"string","internalType":"string"},{"name":"systemFingerprint","type":"string","internalType":"string"},{"name":"object","type":"string","internalType":"string"},{"name":"completionTokens","type":"uint32","internalType":"uint32"},{"name":"promptTokens","type":"uint32","internalType":"uint32"},{"name":"totalTokens","type":"uint32","internalType":"uint32"}]},{"name":"_errorMessage","type":"string","internalType":"string"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"response","inputs":[],"outputs":[{"name":"","type":"string","internalType":"string"}],"stateMutability":"view"},{"type":"function","name":"sendMessage","inputs":[{"name":"loanId","type":"uint256","internalType":"uint256"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"setOracleAddress","inputs":[{"name":"newOracleAddress","type":"address","internalType":"address"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"updateLoanManagerAddress","inputs":[{"name":"newLoanManagerAddress","type":"address","internalType":"address"}],"outputs":[],"stateMutability":"nonpayable"}]}')
     contract_address = '0xC5e3F849996167E80CB7B224696dcAEA6e35F0C1'
