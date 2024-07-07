@@ -1,6 +1,7 @@
+import json
 import requests
 import openai
-from config.settings import API_BASE_URL, MBD_API_KEY, ETH_NODE_URL, CONTRACT_ADDRESS, CONTRACT_ABI, PRIVATE_KEY
+from config.settings import API_BASE_URL, MBD_API_KEY, ETH_NODE_URL, PRIVATE_KEY
 from web3 import Web3
 
 # Connect to the network
@@ -12,7 +13,7 @@ if web3.is_connected():
     print("Connection Successful")
     print("-" * 50)
 else:
-    print("Connection Failed")
+    raise Exception("Connection Failed")
 
 def get_robot_data(evm_address):
     response = requests.get(f'{API_BASE_URL}/robots/{evm_address}')
@@ -80,6 +81,9 @@ def get_emotion_labels(ids):
     return response.json().get("body", [])
 
 def send_message_to_contract(loan_id):
+    abi = json.loads('[{"type":"constructor","inputs":[{"name":"initialOracleAddress","type":"address","internalType":"address"},{"name":"loanManagerAddr","type":"address","internalType":"address"},{"name":"_contextPrompt","type":"string","internalType":"string"}],"stateMutability":"nonpayable"},{"type":"function","name":"contextPrompt","inputs":[],"outputs":[{"name":"","type":"string","internalType":"string"}],"stateMutability":"view"},{"type":"function","name":"getMessageHistory","inputs":[{"name":"","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"","type":"tuple[]","internalType":"struct IOracle.Message[]","components":[{"name":"role","type":"string","internalType":"string"},{"name":"content","type":"tuple[]","internalType":"struct IOracle.Content[]","components":[{"name":"contentType","type":"string","internalType":"string"},{"name":"value","type":"string","internalType":"string"}]}]}],"stateMutability":"view"},{"type":"function","name":"messages","inputs":[{"name":"","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"role","type":"string","internalType":"string"}],"stateMutability":"view"},{"type":"function","name":"onOracleOpenAiLlmResponse","inputs":[{"name":"","type":"uint256","internalType":"uint256"},{"name":"_response","type":"tuple","internalType":"struct IOracle.OpenAiResponse","components":[{"name":"id","type":"string","internalType":"string"},{"name":"content","type":"string","internalType":"string"},{"name":"functionName","type":"string","internalType":"string"},{"name":"functionArguments","type":"string","internalType":"string"},{"name":"created","type":"uint64","internalType":"uint64"},{"name":"model","type":"string","internalType":"string"},{"name":"systemFingerprint","type":"string","internalType":"string"},{"name":"object","type":"string","internalType":"string"},{"name":"completionTokens","type":"uint32","internalType":"uint32"},{"name":"promptTokens","type":"uint32","internalType":"uint32"},{"name":"totalTokens","type":"uint32","internalType":"uint32"}]},{"name":"_errorMessage","type":"string","internalType":"string"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"response","inputs":[],"outputs":[{"name":"","type":"string","internalType":"string"}],"stateMutability":"view"},{"type":"function","name":"sendMessage","inputs":[{"name":"loanId","type":"uint256","internalType":"uint256"}],"outputs":[],"stateMutability":"nonpayable"}]')
+    contract_address = '0xAEe9Fe4A23B40e02d44DF0467AEa2e0235650fe0'
+
     # Initialize the address calling the functions/signing transactions
     caller = web3.eth.account.from_key(PRIVATE_KEY).address
     private_key = PRIVATE_KEY  # To sign the transaction
@@ -88,30 +92,34 @@ def send_message_to_contract(loan_id):
     nonce = web3.eth.get_transaction_count(caller)
 
     # Create smart contract instance
-    contract = web3.eth.contract(address=CONTRACT_ADDRESS, abi=CONTRACT_ABI)
+    contract = web3.eth.contract(address=contract_address, abi=abi)
+    print("Contract instance created", contract)
 
     # Initialize the chain id, we need it to build the transaction for replay protection
     chain_id = web3.eth.chain_id
 
     # Call your function
-    call_function = contract.functions.sendMessage(loan_id).buildTransaction({
-        'chainId': chain_id,
+    call_function = contract.functions.sendMessage(loan_id).build_transaction({
+        'chainId': 696969,
         'from': caller,
         'nonce': nonce,
+        'gas': 2000000,
+        'gasPrice': web3.to_wei('5', 'gwei')
     })
 
     # Sign transaction
     signed_tx = web3.eth.account.sign_transaction(call_function, private_key=private_key)
-
 
     # Send transaction
     print('Sending transaction...')
     tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
 
     # Wait for transaction receipt
+    print("Waiting for transaction receipt...")
     tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
-    print("Transacion successful")
+    print("Transaction successful")
 
+    return tx_receipt
 
 if __name__ == "__main__":
     vitalik_user_id = '5650'  
