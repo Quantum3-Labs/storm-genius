@@ -123,6 +123,8 @@ def send_message_to_contract(loan_id):
     response = contract.functions.response().call()
     print(f"Response from contract: {response}")
 
+    return response, tx_receipt
+
 if __name__ == "__main__":
     vitalik_user_id = '5650'  
     social_score = get_social_score(vitalik_user_id)
