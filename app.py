@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import Label, Button, Entry, StringVar
 from PIL import Image, ImageTk
-from utils.api import get_social_score, send_message_to_contract
+from utils.api import get_social_score, send_message_to_contract, get_gpt_explanation
 
 class StormGeniusApp:
     def __init__(self, root):
@@ -52,29 +52,27 @@ class StormGeniusApp:
         self.show_step()
 
     def show_step(self):
-        if self.current_step < len(self.steps):
-            message, choices = self.steps[self.current_step]
-            self.message_label.config(text=message)
+        message, choices = self.steps[self.current_step]
 
-            if choices:
-                self.entry.pack_forget()
-                self.submit_button.pack_forget()
-                self.previous_button.pack_forget()
-                self.choice_var.set("")
-                for button in self.choice_buttons:
-                    button.pack_forget()
-                self.choice_buttons = []
-                for choice in choices:
-                    button = Button(self.root, text=choice.capitalize(), command=lambda c=choice: self.on_choice(c), bg='#FFD700', fg='#4B0082', font=("Helvetica Neue Bold", 14), activebackground='#FFA500', activeforeground='white', bd=1, relief="solid", padx=10, pady=5)
-                    button.pack(anchor='n', pady=5)
-                    self.choice_buttons.append(button)
-            else:
-                self.entry.pack()
-                self.submit_button.pack()
-                if self.current_step > 0:
-                    self.previous_button.pack()
-        else:
+        self.message_label.config(text=message)
+
+        if choices:
+            self.entry.pack_forget()
+            self.submit_button.pack_forget()
             self.previous_button.pack_forget()
+            self.choice_var.set("")
+            for button in self.choice_buttons:
+                button.pack_forget()
+            self.choice_buttons = []
+            for choice in choices:
+                button = Button(self.root, text=choice.capitalize(), command=lambda c=choice: self.on_choice(c), bg='#FFD700', fg='#4B0082', font=("Helvetica Neue Bold", 14), activebackground='#FFA500', activeforeground='white', bd=1, relief="solid", padx=10, pady=5)
+                button.pack(anchor='n', pady=5)
+                self.choice_buttons.append(button)
+        else:
+            self.entry.pack()
+            self.submit_button.pack()
+            if self.current_step > 0:
+                self.previous_button.pack()
 
     def on_choice(self, choice):
         self.choice_var.set(choice)
@@ -137,6 +135,11 @@ class StormGeniusApp:
                 social_score = get_social_score(user_id)
                 print(f"Debug: Social score: {social_score}")
                 result_message = f"Social Score: {social_score}"
+
+                # Add the "Corcel explanation" button
+                self.explanation_button = Button(self.root, text="Corcel Explanation", command=lambda: self.fetch_explanation(social_score), bg='#FFD700', fg='#4B0082', font=("Helvetica Neue Bold", 14), activebackground='#FFA500', activeforeground='white', bd=1, relief="solid", padx=10, pady=5)
+                self.explanation_button.pack(pady=10)
+
             elif score_type == 'financial' and loan_id:
                 print(f"Debug: Sending message to contract for loan_id={loan_id}")
                 response, receipt = send_message_to_contract(int(loan_id))
@@ -150,10 +153,7 @@ class StormGeniusApp:
                 result_message = "Invalid input."
 
             self.message_label.config(text=result_message)
-            self.previous_button.pack()  # Make sure previous button is shown
-            self.entry.pack_forget()
-            self.submit_button.pack_forget()
-
+            
             if self.close_button:
                 self.close_button.pack_forget()
             self.close_button = Button(self.root, text="Close", command=self.root.quit, bg='#FFFFFF', fg='#4B0082', font=("Helvetica Neue Bold", 16), activebackground='#6A5ACD', activeforeground='white', bd=0, padx=10, pady=5)
@@ -169,14 +169,20 @@ class StormGeniusApp:
             print(f"Debug: {error_message}")
             self.message_label.config(text=error_message)
             
-            self.previous_button.pack()  # Make sure previous button is shown
-            self.entry.pack_forget()
-            self.submit_button.pack_forget()
-
             if self.close_button:
                 self.close_button.pack_forget()
             self.close_button = Button(self.root, text="Close", command=self.root.quit, bg='#FFFFFF', fg='#4B0082', font=("Helvetica Neue Bold", 16), activebackground='#6A5ACD', activeforeground='white', bd=0, padx=10, pady=5)
             self.close_button.pack(pady=10)
+
+    def fetch_explanation(self, social_score):
+        try:
+            explanation = get_gpt_explanation(social_score)
+            self.message_label.config(text=f"Social Score: {social_score}\nExplanation: {explanation}")
+            self.explanation_button.pack_forget()
+        except Exception as e:
+            error_message = f"Error fetching explanation: {e}"
+            print(f"Debug: {error_message}")
+            self.message_label.config(text=error_message)
 
 def main():
     root = tk.Tk()
