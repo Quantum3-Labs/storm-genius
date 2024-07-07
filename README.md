@@ -61,3 +61,63 @@ This social score helps both parties make decisions based on social credibility.
 5. **Result Display**: The social score is displayed to the lender, providing additional context to the borrower's credibility.
 
 By leveraging AI models on-chain and fetching real-time social interaction data, StormGenius provides a comprehensive and robust assessment of a borrower's credibility, enhancing the overall security and efficiency of the decentralized lending process.
+
+## How to Run the Script
+
+### Prerequisites
+
+1. **Python 3.x**: Ensure you have Python 3.x installed on your machine.
+2. **Virtual Environment**: It is recommended to use a virtual environment to manage dependencies.
+
+### Installation
+
+1. **Clone the Repository**:
+    ```bash
+    git clone https://github.com/Quantum3-Labs/storm-genius.git
+    cd storm-genius
+    ```
+
+2. **Create and Activate Virtual Environment**:
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+    ```
+
+3. **Install Dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+### Configuration
+
+1. **API Keys and Settings**: Update the `config/settings.py` file with your API keys and other settings:
+    ```python
+    # config/settings.py
+
+    API_BASE_URL = 'https://api.example.com'
+    PRIVATE_KEY='your_private_key_here'
+
+    # MBD API Key
+    MBD_API_KEY = 'your_mbd_api_key_here'
+
+    # Ethereum node and contract configuration
+    ETH_NODE_URL = 'https://devnet.galadriel.com/'
+    CONTRACT_ADDRESS = '0xC5e3F849996167E80CB7B224696dcAEA6e35F0C1'
+    CONTRACT_ABI = [...]
+    ```
+
+### Running the Script
+
+1. **Run the Application**:
+    ```bash
+    python3 app.py
+    ```
+
+### Usage
+
+1. **Start the Application**: When you run the script, a GUI will appear with an image of StormGenius.
+2. **Choose Score Type**: Select whether you want to fetch a social score or a financial score.
+3. **Enter Required Information**: Depending on your choice, enter the Farcaster ID or Loan ID when prompted.
+4. **View Results**: The application will fetch and display the relevant score and assessment.
+
+By following these steps, you can easily run the StormGenius bot and leverage its capabilities to assess borrower credibility in a decentralized lending protocol.
