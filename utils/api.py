@@ -99,7 +99,7 @@ def get_gpt_explanation(social_score):
         "messages": [
             {
                 "role": "user",
-                "content": "f"The social score of the user is {social_score}. Explain this metric in two lines.""
+                "content": f"The social score of the user is {social_score}. Explain this metric in two lines."
             }
         ]
     }
