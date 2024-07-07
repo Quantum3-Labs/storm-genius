@@ -26,6 +26,7 @@ def get_social_score(fid):
 def get_most_recent_casts_for_user_from_fid(fid):
     url = "https://api.mbd.xyz/v1/farcaster/casts/feed/for-you"
     payload = {
+        "filters": { "ai_labels": ["trust"] },
         "user_id": fid,
         "top_k": 50,
         "return_ai_labels": True
@@ -66,6 +67,6 @@ def get_emotion_labels(ids):
     return response.json().get("body", [])
 
 if __name__ == "__main__":
-    vitalik_user_id = '12345'  # Replace with actual user ID
+    vitalik_user_id = '5650'  
     social_score = get_social_score(vitalik_user_id)
     print(f"Social score of user {vitalik_user_id} is {social_score}")
