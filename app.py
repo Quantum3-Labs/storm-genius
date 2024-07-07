@@ -36,6 +36,10 @@ class StormGeniusApp:
         self.submit_button.pack(pady=10)
         self.submit_button.pack_forget()
 
+        self.previous_button = Button(self.root, text="Previous", command=self.on_previous, bg='#FFFFFF', fg='#4B0082', font=("Helvetica Neue Bold", 16), activebackground='#6A5ACD', activeforeground='white', bd=0, padx=10, pady=5)
+        self.previous_button.pack(pady=10)
+        self.previous_button.pack_forget()
+
         self.close_button = None
 
         self.current_step = 0
@@ -48,49 +52,67 @@ class StormGeniusApp:
         self.show_step()
 
     def show_step(self):
-        message, choices = self.steps[self.current_step]
+        if self.current_step < len(self.steps):
+            message, choices = self.steps[self.current_step]
+            self.message_label.config(text=message)
 
-        self.message_label.config(text=message)
-
-        if choices:
-            self.entry.pack_forget()
-            self.submit_button.pack_forget()
-            self.choice_var.set("")
-            for button in self.choice_buttons:
-                button.pack_forget()
-            self.choice_buttons = []
-            for choice in choices:
-                button = Button(self.root, text=choice.capitalize(), command=lambda c=choice: self.on_choice(c), bg='#FFD700', fg='#4B0082', font=("Helvetica Neue Bold", 14), activebackground='#FFA500', activeforeground='white', bd=1, relief="solid", padx=10, pady=5)
-                button.pack(anchor='n', pady=5)
-                self.choice_buttons.append(button)
+            if choices:
+                self.entry.pack_forget()
+                self.submit_button.pack_forget()
+                self.previous_button.pack_forget()
+                self.choice_var.set("")
+                for button in self.choice_buttons:
+                    button.pack_forget()
+                self.choice_buttons = []
+                for choice in choices:
+                    button = Button(self.root, text=choice.capitalize(), command=lambda c=choice: self.on_choice(c), bg='#FFD700', fg='#4B0082', font=("Helvetica Neue Bold", 14), activebackground='#FFA500', activeforeground='white', bd=1, relief="solid", padx=10, pady=5)
+                    button.pack(anchor='n', pady=5)
+                    self.choice_buttons.append(button)
+            else:
+                self.entry.pack()
+                self.submit_button.pack()
+                if self.current_step > 0:
+                    self.previous_button.pack()
         else:
-            self.entry.pack()
-            self.submit_button.pack()
+            self.previous_button.pack_forget()
 
     def on_choice(self, choice):
         self.choice_var.set(choice)
+        self.results["score_type"] = choice  # Set the score type immediately
+
+        # Remove choice buttons immediately
+        for button in self.choice_buttons:
+            button.pack_forget()
+        
         if choice == 'social':
             self.steps.append(("Please enter the Farcaster ID for the social score", None))
         elif choice == 'financial':
-            self.steps.append(("Please enter the loan ID for the financial score", None))
-        self.on_submit()
+            self.steps.append(("Please enter the Loan ID", None))
+        
+        self.current_step += 1  # Move to the next step
+        self.show_step()  # Show the next step immediately
+
+    def on_previous(self):
+        if self.current_step > 0:
+            self.current_step -= 1
+            if self.current_step == 0:
+                self.results.pop("score_type", None)
+            elif self.results.get("score_type") == 'social':
+                self.results.pop("user_id", None)
+            elif self.results.get("score_type") == 'financial':
+                self.results.pop("loan_id", None)
+            self.steps.pop()  # Remove the last step added
+            self.show_step()
 
     def on_submit(self):
-        if self.current_step == 0:
-            selected_choice = self.choice_var.get()
-            if not selected_choice:
-                self.message_label.config(text="Error: No choice selected.")
-                return
-            self.results["score_type"] = selected_choice
-        else:
-            user_input = self.input_var.get()
-            if not user_input:
-                self.message_label.config(text="Error: No input provided.")
-                return
-            if self.results["score_type"] == 'social' and self.current_step == 1:
-                self.results["user_id"] = user_input
-            elif self.results["score_type"] == 'financial' and self.current_step == 1:
-                self.results["loan_id"] = user_input
+        user_input = self.input_var.get()
+        if not user_input:
+            self.message_label.config(text="Error: No input provided.")
+            return
+        if self.results["score_type"] == 'social':
+            self.results["user_id"] = user_input
+        elif self.results["score_type"] == 'financial':
+            self.results["loan_id"] = user_input
 
         self.current_step += 1
 
@@ -128,7 +150,10 @@ class StormGeniusApp:
                 result_message = "Invalid input."
 
             self.message_label.config(text=result_message)
-            
+            self.previous_button.pack()  # Make sure previous button is shown
+            self.entry.pack_forget()
+            self.submit_button.pack_forget()
+
             if self.close_button:
                 self.close_button.pack_forget()
             self.close_button = Button(self.root, text="Close", command=self.root.quit, bg='#FFFFFF', fg='#4B0082', font=("Helvetica Neue Bold", 16), activebackground='#6A5ACD', activeforeground='white', bd=0, padx=10, pady=5)
@@ -144,6 +169,10 @@ class StormGeniusApp:
             print(f"Debug: {error_message}")
             self.message_label.config(text=error_message)
             
+            self.previous_button.pack()  # Make sure previous button is shown
+            self.entry.pack_forget()
+            self.submit_button.pack_forget()
+
             if self.close_button:
                 self.close_button.pack_forget()
             self.close_button = Button(self.root, text="Close", command=self.root.quit, bg='#FFFFFF', fg='#4B0082', font=("Helvetica Neue Bold", 16), activebackground='#6A5ACD', activeforeground='white', bd=0, padx=10, pady=5)

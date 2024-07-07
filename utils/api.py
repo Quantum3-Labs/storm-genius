@@ -1,7 +1,6 @@
 import json
 import requests
-import openai
-from config.settings import API_BASE_URL, MBD_API_KEY, ETH_NODE_URL, PRIVATE_KEY
+from config.settings import MBD_API_KEY, ETH_NODE_URL, PRIVATE_KEY
 from web3 import Web3
 
 # Connect to the network
@@ -81,8 +80,8 @@ def get_emotion_labels(ids):
     return response.json().get("body", [])
 
 def send_message_to_contract(loan_id):
-    abi = json.loads('[{"type":"constructor","inputs":[{"name":"initialOracleAddress","type":"address","internalType":"address"},{"name":"loanManagerAddr","type":"address","internalType":"address"},{"name":"_contextPrompt","type":"string","internalType":"string"}],"stateMutability":"nonpayable"},{"type":"function","name":"contextPrompt","inputs":[],"outputs":[{"name":"","type":"string","internalType":"string"}],"stateMutability":"view"},{"type":"function","name":"getMessageHistory","inputs":[{"name":"","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"","type":"tuple[]","internalType":"struct IOracle.Message[]","components":[{"name":"role","type":"string","internalType":"string"},{"name":"content","type":"tuple[]","internalType":"struct IOracle.Content[]","components":[{"name":"contentType","type":"string","internalType":"string"},{"name":"value","type":"string","internalType":"string"}]}]}],"stateMutability":"view"},{"type":"function","name":"messages","inputs":[{"name":"","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"role","type":"string","internalType":"string"}],"stateMutability":"view"},{"type":"function","name":"onOracleOpenAiLlmResponse","inputs":[{"name":"","type":"uint256","internalType":"uint256"},{"name":"_response","type":"tuple","internalType":"struct IOracle.OpenAiResponse","components":[{"name":"id","type":"string","internalType":"string"},{"name":"content","type":"string","internalType":"string"},{"name":"functionName","type":"string","internalType":"string"},{"name":"functionArguments","type":"string","internalType":"string"},{"name":"created","type":"uint64","internalType":"uint64"},{"name":"model","type":"string","internalType":"string"},{"name":"systemFingerprint","type":"string","internalType":"string"},{"name":"object","type":"string","internalType":"string"},{"name":"completionTokens","type":"uint32","internalType":"uint32"},{"name":"promptTokens","type":"uint32","internalType":"uint32"},{"name":"totalTokens","type":"uint32","internalType":"uint32"}]},{"name":"_errorMessage","type":"string","internalType":"string"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"response","inputs":[],"outputs":[{"name":"","type":"string","internalType":"string"}],"stateMutability":"view"},{"type":"function","name":"sendMessage","inputs":[{"name":"loanId","type":"uint256","internalType":"uint256"}],"outputs":[],"stateMutability":"nonpayable"}]')
-    contract_address = '0xAEe9Fe4A23B40e02d44DF0467AEa2e0235650fe0'
+    abi = json.loads('{"abi":[{"type":"constructor","inputs":[{"name":"initialOracleAddress","type":"address","internalType":"address"},{"name":"initialLoanManagerAddr","type":"address","internalType":"address"},{"name":"_contextPrompt","type":"string","internalType":"string"}],"stateMutability":"nonpayable"},{"type":"function","name":"contextPrompt","inputs":[],"outputs":[{"name":"","type":"string","internalType":"string"}],"stateMutability":"view"},{"type":"function","name":"getMessageHistory","inputs":[{"name":"","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"","type":"tuple[]","internalType":"struct IOracle.Message[]","components":[{"name":"role","type":"string","internalType":"string"},{"name":"content","type":"tuple[]","internalType":"struct IOracle.Content[]","components":[{"name":"contentType","type":"string","internalType":"string"},{"name":"value","type":"string","internalType":"string"}]}]}],"stateMutability":"view"},{"type":"function","name":"messages","inputs":[{"name":"","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"role","type":"string","internalType":"string"}],"stateMutability":"view"},{"type":"function","name":"onOracleOpenAiLlmResponse","inputs":[{"name":"","type":"uint256","internalType":"uint256"},{"name":"_response","type":"tuple","internalType":"struct IOracle.OpenAiResponse","components":[{"name":"id","type":"string","internalType":"string"},{"name":"content","type":"string","internalType":"string"},{"name":"functionName","type":"string","internalType":"string"},{"name":"functionArguments","type":"string","internalType":"string"},{"name":"created","type":"uint64","internalType":"uint64"},{"name":"model","type":"string","internalType":"string"},{"name":"systemFingerprint","type":"string","internalType":"string"},{"name":"object","type":"string","internalType":"string"},{"name":"completionTokens","type":"uint32","internalType":"uint32"},{"name":"promptTokens","type":"uint32","internalType":"uint32"},{"name":"totalTokens","type":"uint32","internalType":"uint32"}]},{"name":"_errorMessage","type":"string","internalType":"string"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"response","inputs":[],"outputs":[{"name":"","type":"string","internalType":"string"}],"stateMutability":"view"},{"type":"function","name":"sendMessage","inputs":[{"name":"loanId","type":"uint256","internalType":"uint256"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"setOracleAddress","inputs":[{"name":"newOracleAddress","type":"address","internalType":"address"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"updateLoanManagerAddress","inputs":[{"name":"newLoanManagerAddress","type":"address","internalType":"address"}],"outputs":[],"stateMutability":"nonpayable"}]}')
+    contract_address = '0xC5e3F849996167E80CB7B224696dcAEA6e35F0C1'
 
     # Initialize the address calling the functions/signing transactions
     caller = web3.eth.account.from_key(PRIVATE_KEY).address
@@ -92,7 +91,7 @@ def send_message_to_contract(loan_id):
     nonce = web3.eth.get_transaction_count(caller)
 
     # Create smart contract instance
-    contract = web3.eth.contract(address=contract_address, abi=abi)
+    contract = web3.eth.contract(address=contract_address, abi=abi['abi'])
     print("Contract instance created", contract)
 
     # Initialize the chain id, we need it to build the transaction for replay protection
@@ -125,11 +124,11 @@ def send_message_to_contract(loan_id):
 
     return response, tx_receipt
 
-if __name__ == "__main__":
-    vitalik_user_id = '5650'  
-    social_score = get_social_score(vitalik_user_id)
-    print(f"Social score of user {vitalik_user_id} is {social_score}")
+# if __name__ == "__main__":
+#     vitalik_user_id = '5650'  
+#     social_score = get_social_score(vitalik_user_id)
+#     print(f"Social score of user {vitalik_user_id} is {social_score}")
     
-    loan_id = 12295443342769835489004685851661808204504702382070150137287530558429035716723
-    response, receipt = send_message_to_contract(loan_id)
-    print(f"Transaction receipt: {receipt}")
+#     loan_id = 12295443342769835489004685851661808204504702382070150137287530558429035716723
+#     response, receipt = send_message_to_contract(loan_id)
+#     print(f"Transaction receipt: {receipt}")
