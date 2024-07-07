@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import Label, Button, Entry, StringVar
 from PIL import Image, ImageTk
-from utils.api import get_social_score
+from utils.api import get_social_score, get_gpt_explanation, send_message_to_contract
 
 class StormGeniusApp:
     def __init__(self, root):
@@ -42,6 +42,7 @@ class StormGeniusApp:
         self.steps = [
             ("🤖 Hi, this is StormGenius!\nWould you like a social score or a financial score?", ["social", "financial"]),
             ("Please enter the Farcaster ID for the social score", None),
+            ("Please enter the loan ID for the financial score", None),
         ]
         
         self.results = {}
@@ -87,13 +88,16 @@ class StormGeniusApp:
                 ]
             elif selected_choice == 'financial':
                 self.steps = [
-                    ("Fetching financial score...", None)
+                    ("Please enter the loan ID for the financial score", None),
                 ]
         else:
             user_input = self.input_var.get()
             if not user_input:
                 return
-            self.results["user_id"] = user_input
+            if self.results["score_type"] == 'social' and self.current_step == 1:
+                self.results["user_id"] = user_input
+            elif self.results["score_type"] == 'financial' and self.current_step == 1:
+                self.results["loan_id"] = user_input
 
         self.current_step += 1
 
@@ -105,6 +109,7 @@ class StormGeniusApp:
     def fetch_and_display_results(self):
         score_type = self.results.get("score_type", "")
         user_id = self.results.get("user_id", "")
+        loan_id = self.results.get("loan_id", "")
 
         self.message_label.config(text=f"🤖 Fetching {score_type} score...")
         self.root.update()
@@ -113,9 +118,13 @@ class StormGeniusApp:
             if score_type == 'social' and user_id:
                 # Fetch the social score
                 social_score = get_social_score(user_id)
-                result_message = f"Social Score: {social_score}"
+                explanation = get_gpt_explanation(social_score)
+                result_message = f"Social Score: {social_score}\nExplanation: {explanation}"
+            elif score_type == 'financial' and loan_id:
+                receipt = send_message_to_contract(int(loan_id))
+                result_message = f"Financial Score Request Sent.\nTransaction Receipt: {receipt}"
             else:
-                result_message = "Financial score calculation is not implemented."
+                result_message = "Invalid input."
 
             self.message_label.config(text=result_message)
             
